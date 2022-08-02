@@ -1,4 +1,1 @@
-
-cargo build --target wasm32-unknown-unknown --release 
-cp target/wasm32-unknown-unknown/release/testgame.wasm testgame.wasm
-http-server -g
+sh buildfsharp.sh && cargo build --target wasm32-unknown-unknown --release && cp target/wasm32-unknown-unknown/release/testgame.wasm testgame.wasm && http-server -g

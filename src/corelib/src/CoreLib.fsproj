@@ -5,6 +5,8 @@
     <RollForward>Major</RollForward>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="test.fs" />
+    <Compile Include="shapes.fs" />
     <Compile Include="lib.fs" />
   </ItemGroup>
   <ItemGroup>

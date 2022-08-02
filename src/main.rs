@@ -1,17 +1,30 @@
+use corelib::{self, CoreLib::{getScene, SceneItem, tick}};
 use macroquad::prelude::*;
 
 #[macroquad::main("BasicShapes")]
 async fn main() {
+    let mut x = 40.0;
     loop {
-        clear_background(RED);
+        clear_background(BLACK);
 
-        draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
-        draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
-        draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, YELLOW);
-
-        draw_text("IT WORKS!", 20.0, 20.0, 30.0, DARKGRAY);
-
+        let scene = getScene();
+        for s in scene.into_iter() {
+            match s.as_ref() {
+                SceneItem::SSquare(s) => 
+                    
+                    draw_circle(s.x as f32, s.y as f32, 30.0, BLUE),
+            }
+        }
+        
+        // draw_line(x, 40.0, 100.0, 200.0, 15.0, BLUE);
+        // draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
+        // draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, YELLOW);
+        
+        // draw_text("IT WORKS!", 20.0, 20.0, 30.0, DARKGRAY);
+        // x = x + 1.0;
+        tick();
         next_frame().await
+
     }
 }
 
