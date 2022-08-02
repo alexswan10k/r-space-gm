@@ -1,5 +1,5 @@
 [package]
-name = "test-game"
+name = "testgame"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,7 +9,7 @@ path = "src/main.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-wasm-bindgen = "0.2"
+# wasm-bindgen = "0.2"
 macroquad = "0.3.23"
 
 [profile.release]

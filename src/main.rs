@@ -1,10 +1,4 @@
 use macroquad::prelude::*;
-use wasm_bindgen::prelude::wasm_bindgen;
-
-#[wasm_bindgen] 
-pub fn test () {
-
-}
 
 #[macroquad::main("BasicShapes")]
 async fn main() {
