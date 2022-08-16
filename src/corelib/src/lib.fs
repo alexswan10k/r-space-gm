@@ -31,15 +31,41 @@ let hello () =
 //     let next = (scene |> List.map(updateElems))
 //     scene <- next
 
-let mutable ecs = 
-    ECS.create([
-        "Hello", [
-            //sprite
-            Vec.create 0f 0f |> Component.position 
-            Vec.create 0f 0f |> Component.velocity 
+let mutable gamestate = 
+    {
+        Entities = [
+            Entity.named "test"
         ]
-    ])
+    }
+
+let captureInputs () = ()
+
+let playerControlSystem inputs x =
+    x
+let npcBehaviourSystem x =
+    x
+
+let physicsSystem x =
+    x
+let renderSystem x = 
+    x
+let audioSystem x =
+    x
 
 let tick () = 
-    let next = (ecs |> ECS.Comps.mapComponents (fun c -> c))
-    ecs <- next
+    let inputs = captureInputs()
+
+    let current = gamestate
+
+    let next = 
+        current
+        |> playerControlSystem inputs
+        |> npcBehaviourSystem
+        |> physicsSystem
+        |> renderSystem
+        |> audioSystem
+
+
+    //wait vsync
+
+    gamestate <- next
