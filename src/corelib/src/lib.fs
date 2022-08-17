@@ -79,7 +79,7 @@ let physicsSystem dt world =
         world.Entities 
         |> List.choose(function 
             | { Spatial = { Position = position} 
-                Physics = Some phys } -> Some (position, phys) 
+                Physics = Some phys } -> Some struct(position, phys) 
             | _ -> None) |> Array.ofList
     let entities = 
         world.Entities 

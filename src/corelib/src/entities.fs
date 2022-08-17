@@ -1,5 +1,6 @@
 module Entities
 open System
+open Fable.Core.Rust
 
 [<Struct>]
 type Vector2<[<Measure>] 'a> = {
@@ -55,7 +56,7 @@ module Vec =
         let velocityDelta = accel * dt
         velocity + velocityDelta
     // F = Gm1m2/r^2
-    let calcAttractiveForce (m1: float32<kg>, p1) (m2: float32<kg>, p2): float32<N> = 
+    let calcAttractiveForce struct(m1: float32<kg>, p1) struct(m2: float32<kg>, p2): float32<N> = 
         let g = 6.674 * Math.Pow(10, -11) |> float32
         let g = g * 1f<m^3*kg^-1*s^-2>
         let r = distance p2 p1
@@ -98,7 +99,7 @@ type PhysicsSimulated = {
 
 module PhysicsSimulated =
     let gravForceVec (position1: Vector2<m>, item1) (position2: Vector2<m>, item2) =
-        let force = Vec.calcAttractiveForce (item1.Mass, position1) (item2.Mass, position2)
+        let force = Vec.calcAttractiveForce struct(item1.Mass, position1) struct(item2.Mass, position2)
         let direction = position2 - position1
         let item1Direction = Vec.normalize direction
         //let item2Direction = Vec.invert item1Direction
@@ -109,7 +110,7 @@ module PhysicsSimulated =
     let gravInteractions (sim) (item1Pos: Vector2<m>, item1: PhysicsSimulated) = 
         let allForces = 
             (item1.Forces, sim) 
-            ||> Seq.fold (fun acc (item2Pos, item2) -> 
+            ||> Seq.fold (fun acc struct(item2Pos, item2) -> 
                     acc + gravForceVec (item1Pos, item1) (item2Pos, item2)               
                     )
         {item1 with Forces = allForces}
@@ -137,18 +138,19 @@ module Entity =
     let withPhysics physics ent = { ent with Physics = Some physics}
     let withPosition x y ent= 
         { ent with Spatial = {ent.Spatial with Position = { x = x; y = y }}}
-    let withMass mass = withPhysics { Mass = mass; Velocity = Vec.zero(); Forces = Vec.zero() }
+    let withMass mass ent = 
+        withPhysics { Mass = mass; Velocity = Vec.zero(); Forces = Vec.zero() } ent
     let applyForce f ent =
         match ent.Physics with
         | Some phys ->
             {ent with Physics = Some {phys with Forces = phys.Forces + f }}
         | None -> ent
-    let applyForceMD m dir ent =
+    let applyForceMD m dir ([<ByRef>]ent) =
         match ent.Physics with
         | Some phys ->
             {ent with Physics = Some {phys with Forces = Vec.toVec m dir }}
         | None -> ent
-    let rotate r ent = 
+    let rotate r ([<ByRef>]ent) = 
         {ent with Spatial = {ent.Spatial with Rotation = ent.Spatial.Rotation + r}}
 
 type Viewport = {
