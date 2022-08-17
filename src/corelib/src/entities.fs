@@ -26,7 +26,7 @@ with
 [<Measure>] type m
 [<Measure>] type s
 [<Measure>] type N = kg*m/s^2
-[<Measure>] type Deg
+[<Measure>] type Rad
 
 module Vec = 
     let create x y = { x = x; y = y }
@@ -72,6 +72,10 @@ module Vec =
     let magnitude (v: Vector2<'a>) = 
         //pythagoras
         sqrt (magnitudeSq v)
+    let toVec (magnitude: float32<'a>) (dir: float32<Rad>) =
+        let x = Math.Cos(dir |> float) |> float32
+        let y = Math.Sin(dir |> float) |> float32
+        { x = x * magnitude; y = y * magnitude }
     let normalize (v: Vector2<'a>) =
         let hyp = magnitude v
         let x = v.x / hyp
@@ -80,52 +84,79 @@ module Vec =
     let invert (v: Vector2<'a>) = 
         {x = -v.x; y = -v.y}
 
-type PhysicsSimulated = {
-    Rotation: float32<Deg>
+[<Struct>]
+type Spatial = {
+    Rotation: float32<Rad>
     Position: Vector2<m>
+}
+
+type PhysicsSimulated = {
     Velocity: Vector2<m/s>
     Forces: Vector2<N>
     Mass: float32<kg>
 }
 
 module PhysicsSimulated =
-    let forceVec item1 item2 =
-        let force = Vec.calcAttractiveForce (item1.Mass, item1.Position) (item2.Mass, item2.Position)
-        let direction = item2.Position - item1.Position
+    let gravForceVec (position1: Vector2<m>, item1) (position2: Vector2<m>, item2) =
+        let force = Vec.calcAttractiveForce (item1.Mass, position1) (item2.Mass, position2)
+        let direction = position2 - position1
         let item1Direction = Vec.normalize direction
         //let item2Direction = Vec.invert item1Direction
         let item1Force = item1Direction * force
         //let item2Force = item2Direction * force
         item1Force//, item2Force
 
-    let interactions (dt: float32<s>) (sim: PhysicsSimulated seq) (item1: PhysicsSimulated) = 
+    let gravInteractions (sim) (item1Pos: Vector2<m>, item1: PhysicsSimulated) = 
         let allForces = 
             (item1.Forces, sim) 
-            ||> Seq.fold (fun acc item2 -> 
-                    acc + forceVec item1 item2               
+            ||> Seq.fold (fun acc (item2Pos, item2) -> 
+                    acc + gravForceVec (item1Pos, item1) (item2Pos, item2)               
                     )
         {item1 with Forces = allForces}
         
-    let nextFrame (dt: float32<s>) (p: PhysicsSimulated) = 
+    let incrementFrameFromForces (dt: float32<s>) (position, p: PhysicsSimulated) = 
         let acceleration = Vec.getAcceleration p.Forces p.Mass
-        { p with    Position = p.Position + (p.Velocity * dt)
-                    Velocity = p.Velocity + (acceleration * dt) 
-                    Forces = Vec.zero() }
+        position + (p.Velocity * dt),
+            { p with    Velocity = p.Velocity + (acceleration * dt) 
+                        Forces = Vec.zero() }
     
-    let nextFrameAll  (dt: float32<s>) (ps: PhysicsSimulated array) =
-        [|for p in ps ->  
-            let pInt = interactions dt ps p
-            nextFrame dt pInt
-            |]
+    // let nextFrameAll  (dt: float32<s>) (ps: PhysicsSimulated array) =
+    //     [|for p in ps ->  
+    //         let pInt = gravInteractions ps p
+    //         nextFrame dt pInt
+    //         |]
+
 type Entity = {
     Name: string
+    Spatial: Spatial
     Physics: PhysicsSimulated option
     // Components: Component list
 }
 module Entity = 
-    let named name = { Name = name ; Physics = None}
-    let withPhysics physics x = { x with Physics = Some physics}
+    let named name = { Name = name ; Physics = None; Spatial = { Position = Vec.zero(); Rotation = 0f<Rad> } }
+    let withPhysics physics ent = { ent with Physics = Some physics}
+    let withPosition x y ent= 
+        { ent with Spatial = {ent.Spatial with Position = { x = x; y = y }}}
+    let withMass mass = withPhysics { Mass = mass; Velocity = Vec.zero(); Forces = Vec.zero() }
+    let applyForce f ent =
+        match ent.Physics with
+        | Some phys ->
+            {ent with Physics = Some {phys with Forces = phys.Forces + f }}
+        | None -> ent
+    let applyForceMD m dir ent =
+        match ent.Physics with
+        | Some phys ->
+            {ent with Physics = Some {phys with Forces = Vec.toVec m dir }}
+        | None -> ent
+    let rotate r ent = 
+        {ent with Spatial = {ent.Spatial with Rotation = ent.Spatial.Rotation + r}}
+
+type Viewport = {
+    Position: Vector2<m>
+    Zoom: float32
+}
 
 type GameState = {
     Entities: Entity list
+    Viewport: Viewport
 }

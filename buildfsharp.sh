@@ -1,1 +1,1 @@
-dotnet fable src/corelib/src/CoreLib.fsproj --lang rust
+dotnet fable src/corelib/src/CoreLib.fsproj --lang rust && cargo fmt --all
