@@ -4,8 +4,8 @@ open Shapes
 open Entities
 open World
 
-let hello () =
-    CoreLib.Test.hello ()
+// let hello () =
+//     CoreLib.Test.hello ()
 
 // type SceneItem = 
 //     | SSquare of Square
@@ -69,7 +69,7 @@ let playerControlSystem inputs world =
             | LeftArrow -> player |> Entity.rotate -0.1f<Rad>
             | NoInput -> player
         { gamestate with Entities = playerNext::t }
-    | [] -> { gamestate with Entities = [] }
+    | _ -> { gamestate with Entities = [] }
 
 let npcBehaviourSystem x =
     x

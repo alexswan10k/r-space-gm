@@ -5,7 +5,7 @@
     <RollForward>Major</RollForward>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="test.fs" />
+    <!-- <Compile Include="test.fs" /> -->
     <Compile Include="shapes.fs" />
     <Compile Include="entities.fs" />
     <Compile Include="world.fs" />
