@@ -1,10 +1,12 @@
+use std::fmt::format;
+
 use corelib::{
     self,
     CoreLib::{getState, renderEty, tick, Inputs},
 };
 use macroquad::{miniquad::gl::GL_TIME_ELAPSED, prelude::*};
 
-#[macroquad::main("BasicShapes")]
+#[macroquad::main("SpaceGm")]
 async fn main() {
     let mut x = 40.0;
     let v = vec2(3.0, 2.0);
@@ -16,21 +18,37 @@ async fn main() {
         clear_background(BLACK);
         let state = getState();
         for e in state.Entities.into_iter() {
-            let v = renderEty(e, state.clone());
+            let v = renderEty(screen_width(), screen_height(), e.clone(), state.clone());
+            let v = vec2(v.x, v.y);
+            let angleAsVec = vec2(e.Spatial.Rotation.cos(), e.Spatial.Rotation.sin());
+            let vFront = v + vec2(30., 0.).rotate(angleAsVec);
+            let vLeft = v + vec2(0., -15.).rotate(angleAsVec);
+            let vRight = v + vec2(0., 15.).rotate(angleAsVec);
 
-            draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
+            // let vec = vec2(v.x, v.y);
+            // let p = format!("item: {:}, {:?}", e.Name.as_str(), v);
+            // draw_text(p.as_str(), 20.0, 60.0, 30.0, DARKGREEN);
+            // draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
+
+            draw_triangle(vFront, vLeft, vRight, BLUE);
+            // draw_circle(v.x, v.y, 30.0, ORANGE)
         }
 
-        draw_triangle(
-            Vec2::new(123.0, 55.0),
-            Vec2::new(25.3, 43.5),
-            Vec2::new(75.2, 22.1),
-            GREEN,
-        );
+        let world_print = format!("{:?}", state.Entities);
+        draw_text(world_print.as_str(), 20.0, 80.0, 30.0, DARKGREEN);
+        let vp_print = format!("{:?}", state.Viewport);
+        draw_text(vp_print.as_str(), 20.0, 100.0, 30.0, DARKGREEN);
 
-        draw_line(x, 40.0, 100.0, 200.0, 15.0, BLUE);
-        draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
-        draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, YELLOW);
+        // draw_triangle(
+        //     Vec2::new(123.0, 55.0),
+        //     Vec2::new(25.3, 43.5),
+        //     Vec2::new(75.2, 22.1),
+        //     GREEN,
+        // );
+
+        // draw_line(x, 40.0, 100.0, 200.0, 15.0, BLUE);
+        // draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
+        // draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, YELLOW);
 
         draw_text(
             ("IT WORKS!".to_owned() + prevTime.to_string().as_str()).as_str(),

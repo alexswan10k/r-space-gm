@@ -6,5 +6,6 @@ edition = "2021"
 [lib]
 path = "./src/lib.fs.rs"
 
+
 [dependencies]
 fable_library_rust = { path = "./src/fable_modules/fable-library-rust", features = [], default-features = false }

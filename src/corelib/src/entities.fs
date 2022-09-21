@@ -29,6 +29,15 @@ with
 [<Measure>] type N = kg*m/s^2
 [<Measure>] type Rad
 
+open Fable.Core
+
+module Testing =
+    [<Emit("assert_eq!")>]
+    let inline equal expected actual: unit = nativeOnly
+    [<Emit("assert_ne!")>]
+    let inline notEqual expected actual: unit = nativeOnly
+    type FactAttribute() = inherit System.Attribute()
+
 module Vec = 
     let create x y = { x = x; y = y }
     let zero () = { x = 0f<_>; y = 0f<_> }
@@ -85,6 +94,13 @@ module Vec =
     let invert (v: Vector2<'a>) = 
         {x = -v.x; y = -v.y}
 
+    module Tests = 
+        open Testing
+        [<Fact>]
+        let is4 () =
+            1 |> equal 1
+
+
 [<Struct>]
 type Spatial = {
     Rotation: float32<Rad>
@@ -111,8 +127,9 @@ module PhysicsSimulated =
         let allForces = 
             (item1.Forces, sim) 
             ||> Seq.fold (fun acc struct(item2Pos, item2) -> 
-                    acc + gravForceVec (item1Pos, item1) (item2Pos, item2)               
-                    )
+                if item2.Mass = item1.Mass then acc //skip self
+                else acc + gravForceVec (item1Pos, item1) (item2Pos, item2)               
+                )
         {item1 with Forces = allForces}
         
     let incrementFrameFromForces (dt: float32<s>) (position, p: PhysicsSimulated) = 

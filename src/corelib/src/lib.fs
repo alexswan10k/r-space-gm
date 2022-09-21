@@ -42,8 +42,8 @@ let mutable gamestate =
             |> Entity.withMass 10000000f<kg>
         ]
         Viewport = {
-            Position = { x = 100f<m>; y = 100f<m> }
-            Zoom = 100f
+            Position = { x = 1000f<m>; y = 1000f<m> }
+            Zoom = 0.5f
         }
     }
 let getState() = gamestate
@@ -63,10 +63,10 @@ let playerControlSystem inputs world =
     | ({ Physics = Some phys } as player)::t ->
         let playerNext = 
             match inputs with
-            | UpArrow -> player |> Entity.applyForceMD 1000f<N> player.Spatial.Rotation //|> Entity.applyForce { x = 1000f<N>; y = 0f<N> }
+            | UpArrow -> player |> Entity.applyForceMD 5000f<N> player.Spatial.Rotation //|> Entity.applyForce { x = 1000f<N>; y = 0f<N> }
             | DownArrow -> player  |> Entity.applyForceMD -200f<N> player.Spatial.Rotation
-            | RightArrow -> player |> Entity.rotate 0.1f<Rad>
-            | LeftArrow -> player |> Entity.rotate -0.1f<Rad>
+            | RightArrow -> player |> Entity.rotate 0.02f<Rad>
+            | LeftArrow -> player |> Entity.rotate -0.02f<Rad>
             | NoInput -> player
         { gamestate with Entities = playerNext::t }
     | _ -> { gamestate with Entities = [] }
@@ -94,6 +94,11 @@ let physicsSystem dt world =
     { world with Entities = entities }
 let renderSystem x = 
     x
+let viewportFollowPlayer world = 
+    match world.Entities with
+    | player::t ->
+        { world with Viewport = { world.Viewport with Position = player.Spatial.Position } }
+    | _ -> world
 let audioSystem x =
     x
 
@@ -106,6 +111,7 @@ let tick dt inputs =
         |> playerControlSystem inputs
         |> npcBehaviourSystem
         |> physicsSystem dt
+        |> viewportFollowPlayer
         |> renderSystem
         |> audioSystem
 
@@ -114,6 +120,8 @@ let tick dt inputs =
 
     gamestate <- next
 
-let renderEty e state =
+let renderEty (screenWidth: float32, screenHeight: float32) e state =
+    let v = { x = screenWidth * 0.5f<m>; y = screenHeight * 0.5f<m> }
+
     let screenPos = (e.Spatial.Position - state.Viewport.Position) * state.Viewport.Zoom
-    screenPos
+    screenPos + v
